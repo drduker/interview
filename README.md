@@ -30,7 +30,7 @@ The application consists of:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/secure-artifact-manager.git
+   git clone https://github.com/drduker/interview.git
    cd secure-artifact-manager
    ```
 
