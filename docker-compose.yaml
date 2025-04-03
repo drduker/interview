@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - STORAGE_PATH=/artifacts
+      - JWT_SECRET=dev_secret_key_change_in_production
+    volumes:
+      - artifact-storage:/artifacts
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - artifact-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - artifact-network
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=artifactmgr
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=artifacts
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - artifact-network
+
+volumes:
+  artifact-storage:
+  postgres-data:
+
+networks:
+  artifact-network:
+    driver: bridge

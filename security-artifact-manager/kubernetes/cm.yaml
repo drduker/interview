@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-manager-config
+  labels:
+    app: artifact-manager
+data:
+  SCANNER_ENABLED: "true"
+  SCANNER_TIMEOUT: "300"
+  LOG_LEVEL: "info"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: artifact-manager-secrets
+  labels:
+    app: artifact-manager
+type: Opaque
+data:
+  jwt-secret: c2VjdXJlLWp3dC1zZWNyZXQta2V5LWZvci1hcnRpZmFjdC1tYW5hZ2VyCg==  # Base64 encoded
+  db-user: YXJ0aWZhY3RtZ3I=  # artifactmgr
+  db-password: c2VjdXJlcGFzc3dvcmQ=  # securepassword
+  db-name: YXJ0aWZhY3Rz  # artifacts

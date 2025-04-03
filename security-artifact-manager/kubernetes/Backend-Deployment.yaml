@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: artifact-manager-backend
+  labels:
+    app: artifact-manager
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: artifact-manager
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: artifact-manager
+        component: backend
+    spec:
+      containers:
+      - name: backend
+        image: artifact-manager-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: STORAGE_PATH
+          value: "/artifacts"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: artifact-manager-secrets
+              key: jwt-secret
+        - name: DB_HOST
+          value: "postgres-service"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: artifact-manager-secrets
+              key: db-user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: artifact-manager-secrets
+              key: db-password
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: artifact-manager-secrets
+              key: db-name
+        volumeMounts:
+        - name: artifact-storage
+          mountPath: /artifacts
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: artifact-storage
+        persistentVolumeClaim:
+          claimName: artifact-storage-pvc
+      securityContext:
+        fsGroup: 1000
